@@ -3,7 +3,7 @@ import type { Route } from "./+types/page";
 import { get, del, post } from "@/client/api-client";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Link } from "react-router";
+import { Link, useRevalidator } from "react-router";
 import { cn } from "@/lib/utils";
 import { EditIcon, Trash2 } from "lucide-react";
 import { ConfirmationModal } from "@/components/confirm-modal";
@@ -27,6 +27,7 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
 }
 
 const customer = ({ loaderData }: Route.ComponentProps) => {
+  const revalidator = useRevalidator();
   const [open, setOpen] = React.useState(false);
   const [selectedId, setSelectedId] = React.useState<number | null>(null);
   const queryClient = useQueryClient();
@@ -38,7 +39,7 @@ const customer = ({ loaderData }: Route.ComponentProps) => {
     },
     onSuccess: () => {
       toast.success("Customer deleted successfully!");
-      queryClient.invalidateQueries({ queryKey: ["customers"] });
+      revalidator.revalidate();
       setOpen(false);
       setSelectedId(null);
     },
@@ -74,7 +75,9 @@ const customer = ({ loaderData }: Route.ComponentProps) => {
                     <EditIcon className="h-4 w-4" />
                   </Link>
 
-                  <Button onClick={()=>{
+                  <Button
+                    isLoading={isPending && selectedId == item.id}
+                  onClick={()=>{
                     setOpen(true);
                     setSelectedId(item.id);
                   }} variant="destructive" size="icon">
