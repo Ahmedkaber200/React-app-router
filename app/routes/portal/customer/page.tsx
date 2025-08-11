@@ -1,20 +1,14 @@
 import React from "react";
 import type { Route } from "./+types/page";
 import { get, del, post } from "@/client/api-client";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Link } from "react-router";
 import { cn } from "@/lib/utils";
 import { EditIcon, Trash2 } from "lucide-react";
 import { ConfirmationModal } from "@/components/confirm-modal";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export async function clientLoader() {
   const data = await get(`/customers/`);
@@ -35,6 +29,24 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
 const customer = ({ loaderData }: Route.ComponentProps) => {
   const [open, setOpen] = React.useState(false);
   const [selectedId, setSelectedId] = React.useState<number | null>(null);
+  const queryClient = useQueryClient();
+
+  const { mutate: deleteCustomer, isPending } = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await del(`/customers/${id}`);
+      toast.success("Customer deleted successfully!");
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
+      setOpen(false);
+      setSelectedId(null);
+    },
+    onError: () => {
+      toast.error("Failed to delete customer.");
+    },
+  });
+
   return (
     <div>
       <Table>
@@ -58,30 +70,26 @@ const customer = ({ loaderData }: Route.ComponentProps) => {
               <TableCell>{item.address}</TableCell>
               <TableCell>
                 <div className="flex justify-start gap-2">
-                  <Link
-                    to={`/customers/${item.id}`}
-                    className={cn(
-                      buttonVariants({ variant: "outline", size: "icon" })
-                    )}
-                  >
+                  <Link to={`/customers/${item.id}`} className={cn(buttonVariants({ variant: "outline", size: "icon" }))}>
                     <EditIcon className="h-4 w-4" />
                   </Link>
-                  <form method="delete">
-                    <input type="hidden" name="id" value={item.id} />
-                    <Button variant="destructive" size="icon" type="submit">
-                      <Trash2 className="h-4 w-4 text-white" />
-                    </Button>
-                  </form>
+
+                  <Button variant="destructive" size="icon">
+                    <Trash2 className="h-4 w-4 text-white" />
+                  </Button>
                 </div>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-      {/* <form method="post">
-         <input type="hidden" name="id" value={selectedId ?? ""} />
-        <ConfirmationModal open={open} onCancel={setOpen} />
-      </form> */}
+      <ConfirmationModal
+        open={open}
+        onCancel={setOpen}
+        onClick={() => {
+          deleteCustomer(selectedId!);
+        }}
+      />
     </div>
   );
 };

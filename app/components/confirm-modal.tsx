@@ -10,9 +10,11 @@ import { Button } from "@/components/ui/button";
 type ModalProps = {
   open: boolean;
   onCancel?: (e: boolean) => void;
+  onClick?: () => void;
+
 };
 
-export function ConfirmationModal({ open, onCancel }: ModalProps) {
+export function ConfirmationModal({ open, onCancel , onClick }: ModalProps) {
   return (
     <Dialog open={open} onOpenChange={onCancel}>
       <DialogContent className="sm:max-w-md">
@@ -26,7 +28,7 @@ export function ConfirmationModal({ open, onCancel }: ModalProps) {
           <Button variant="outline" onClick={() => onCancel && onCancel(false)}>
             Cancel
           </Button>
-          <Button type="submit" variant="destructive">
+          <Button onClick={onClick} type="submit" variant="destructive">
             Delete
           </Button>
         </DialogFooter>
