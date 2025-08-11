@@ -34,10 +34,10 @@ const customer = ({ loaderData }: Route.ComponentProps) => {
   const { mutate: deleteCustomer, isPending } = useMutation({
     mutationFn: async (id: number) => {
       const res = await del(`/customers/${id}`);
-      toast.success("Customer deleted successfully!");
       return res;
     },
     onSuccess: () => {
+      toast.success("Customer deleted successfully!");
       queryClient.invalidateQueries({ queryKey: ["customers"] });
       setOpen(false);
       setSelectedId(null);
@@ -74,7 +74,10 @@ const customer = ({ loaderData }: Route.ComponentProps) => {
                     <EditIcon className="h-4 w-4" />
                   </Link>
 
-                  <Button variant="destructive" size="icon">
+                  <Button onClick={()=>{
+                    setOpen(true);
+                    setSelectedId(item.id);
+                  }} variant="destructive" size="icon">
                     <Trash2 className="h-4 w-4 text-white" />
                   </Button>
                 </div>
