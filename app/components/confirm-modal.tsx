@@ -8,13 +8,14 @@ import {
 import { Button } from "@/components/ui/button";
 
 type ModalProps = {
+  isLoading?: boolean;
   open: boolean;
   onCancel?: (e: boolean) => void;
   onClick?: () => void;
 
 };
 
-export function ConfirmationModal({ open, onCancel , onClick }: ModalProps) {
+export function ConfirmationModal({ open, isLoading, onCancel , onClick }: ModalProps) {
   return (
     <Dialog open={open} onOpenChange={onCancel}>
       <DialogContent className="sm:max-w-md">
@@ -28,7 +29,7 @@ export function ConfirmationModal({ open, onCancel , onClick }: ModalProps) {
           <Button variant="outline" onClick={() => onCancel && onCancel(false)}>
             Cancel
           </Button>
-          <Button onClick={onClick} type="submit" variant="destructive">
+          <Button isLoading={isLoading} onClick={onClick} type="submit" variant="destructive">
             Delete
           </Button>
         </DialogFooter>

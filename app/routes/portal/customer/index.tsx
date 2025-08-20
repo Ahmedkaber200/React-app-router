@@ -1,5 +1,5 @@
 import React from "react";
-import type { Route } from "./+types/page";
+import type { Route } from "./+types/index";
 import { get, del, post } from "@/client/api-client";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -7,31 +7,25 @@ import { Link, useRevalidator } from "react-router";
 import { cn } from "@/lib/utils";
 import { EditIcon, Trash2 } from "lucide-react";
 import { ConfirmationModal } from "@/components/confirm-modal";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-export async function clientLoader() {
-  const data = await get(`/customers/`);
-  return data || [];
-}
+// export async function clientLoader() {
+//   const data = await get(`/customers/`);
+//   return data || [];
+// }
 
-export async function clientAction({ request }: Route.ClientActionArgs) {
-  const formData = await request.formData();
-  const id = formData.get("id");
 
-  if (!id) return { success: false, error: "No ID provided" };
-
-  const res = await del(`/customers/${id}`);
-  console.log(res);
-  return { success: true };
-}
 
 const customer = ({ loaderData }: Route.ComponentProps) => {
   const revalidator = useRevalidator();
   const [open, setOpen] = React.useState(false);
   const [selectedId, setSelectedId] = React.useState<number | null>(null);
   const queryClient = useQueryClient();
-
+const { data = [], isLoading } = useQuery<any>({
+    queryKey: ["customer"],
+    queryFn: () => get(`/customers`),
+  });
   const { mutate: deleteCustomer, isPending } = useMutation({
     mutationFn: async (id: number) => {
       const res = await del(`/customers/${id}`);
@@ -39,7 +33,7 @@ const customer = ({ loaderData }: Route.ComponentProps) => {
     },
     onSuccess: () => {
       toast.success("Customer deleted successfully!");
-      revalidator.revalidate();
+      queryClient.invalidateQueries({ queryKey: ["customer"] });
       setOpen(false);
       setSelectedId(null);
     },
@@ -50,6 +44,12 @@ const customer = ({ loaderData }: Route.ComponentProps) => {
 
   return (
     <div>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold">Customers</h1>
+        <Link to="/customers/create" className={cn(buttonVariants({ variant: "primary" }))}>
+          Add Customer
+        </Link>
+        </div>
       <Table>
         <TableCaption>A list of your customers.</TableCaption>
         <TableHeader>
@@ -63,7 +63,7 @@ const customer = ({ loaderData }: Route.ComponentProps) => {
         </TableHeader>
 
         <TableBody>
-          {(loaderData as any).map((item: any) => (
+          {(data as any).map((item: any) => (
             <TableRow key={item.id}>
               <TableCell className="font-medium">{item.name}</TableCell>
               <TableCell>{item.email}</TableCell>
@@ -76,7 +76,6 @@ const customer = ({ loaderData }: Route.ComponentProps) => {
                   </Link>
 
                   <Button
-                    isLoading={isPending && selectedId == item.id}
                   onClick={()=>{
                     setOpen(true);
                     setSelectedId(item.id);
@@ -90,6 +89,7 @@ const customer = ({ loaderData }: Route.ComponentProps) => {
         </TableBody>
       </Table>
       <ConfirmationModal
+      isLoading={isPending}
         open={open}
         onCancel={setOpen}
         onClick={() => {

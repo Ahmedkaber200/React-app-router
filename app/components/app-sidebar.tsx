@@ -20,6 +20,7 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { NavLink  } from "react-router";
+import { useAuthStore } from "@/store/auth";
 // import { InitializeStore, storeRef } from "@/app/hooks/usestore";
 
 // Sample data
@@ -56,6 +57,7 @@ const data: MenuItem[] = [
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 //   const router = useRouter();
+const {user , logout} = useAuthStore()
 
 //   const handleLogout = () => {
 //     console.log("Logging out...");
@@ -68,7 +70,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {/* <InitializeStore ref={storeRef} /> */}
       <Sidebar {...props}>
         <SidebarHeader>
-          <h1>Company Name</h1>
+          <h1>{user?.name}</h1>
         </SidebarHeader>
 
         <SidebarContent className="gap-0">
@@ -123,12 +125,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarContent>
             <SidebarMenu>
               <SidebarMenuItem className="w-full">
-                {/* <SidebarMenuButton
+                <SidebarMenuButton
                   className="w-full text-left"
-                  onClick={handleLogout}
+                  onClick={logout}
                 >
                   Sign Out
-                </SidebarMenuButton> */}
+                </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>

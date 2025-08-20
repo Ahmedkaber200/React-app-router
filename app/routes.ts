@@ -11,7 +11,9 @@ export default [
   layout("routes/portal/layout.tsx",
     [
       route("dashboard", "routes/portal/dashboard/page.tsx"),
-      route("customers", "routes/portal/customer/page.tsx"),
+      route("customers", "routes/portal/customer/index.tsx"),
+      route("customers/create", "routes/portal/customer/create.tsx"),
+      route("customers/:id", "routes/portal/customer/edit.tsx"),
     ]
   ),
 ] satisfies RouteConfig;

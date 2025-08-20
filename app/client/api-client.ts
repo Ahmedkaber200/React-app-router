@@ -12,18 +12,36 @@ interface ApiResponse<T> {
 
 type RequestConfig = Omit<RequestInit, "headers"> & {
   headers?: Record<string, string>;
+  req?: Request; // 👈 SSR support
 };
 
-const getAuthToken = () => Cookies.get("auth_token");
-console.log('Auth Token:', getAuthToken);
+// ✅ Auth Token Getter (CSR + SSR)
+export const getAuthToken = (req?: Request): string | undefined => {
+  if (req) {
+    const cookieHeader = req.headers.get("cookie");
+    if (!cookieHeader) return undefined;
 
-// Request Interceptor
+    const match = cookieHeader
+      .split(";")
+      .find((c) => c.trim().startsWith("auth_token="));
+    return match ? decodeURIComponent(match.split("=")[1]) : undefined;
+  }
+
+  if (typeof window !== "undefined") {
+    return Cookies.get("auth_token");
+  }
+
+  return undefined;
+};
+
+// ✅ Request Interceptor
 const requestInterceptor = (config: RequestConfig): RequestConfig => {
-  const token = getAuthToken();
+  const token = getAuthToken(config.req);
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...config.headers,
   };
+
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
@@ -34,10 +52,17 @@ const requestInterceptor = (config: RequestConfig): RequestConfig => {
   };
 };
 
-// Response Interceptor
+// ✅ Response Interceptor
 const responseInterceptor = async <T>(response: Response): Promise<T> => {
-  const data: ApiResponse<T> = await response.json();
-  if (!response.status) {
+  let data: ApiResponse<T>;
+
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error("Invalid JSON response from server");
+  }
+
+  if (!response.ok) {
     const error = new Error(data.message || "Request failed");
     Object.assign(error, {
       status: response.status,
@@ -53,7 +78,7 @@ const responseInterceptor = async <T>(response: Response): Promise<T> => {
   return data.data;
 };
 
-// Error Interceptor
+// ✅ Error Interceptor
 const errorInterceptor = (error: unknown): never => {
   if (error instanceof Error) {
     toast.error(error.message);
@@ -63,7 +88,7 @@ const errorInterceptor = (error: unknown): never => {
   }
 };
 
-// Main API Client
+// ✅ Main API Client
 export const apiClient = async <T>(
   endpoint: string,
   config: RequestConfig = {}
@@ -71,7 +96,13 @@ export const apiClient = async <T>(
   try {
     const interceptedConfig = requestInterceptor(config);
     const response = await fetch(`${BASE_URL}${endpoint}`, interceptedConfig);
-    console.log(`Request to ${BASE_URL}${endpoint} with config:`, interceptedConfig);
+
+    console.log(
+      `Request → ${BASE_URL}${endpoint}`,
+      interceptedConfig,
+      "Status:",
+      response.status
+    );
 
     return await responseInterceptor<T>(response);
   } catch (error) {
@@ -79,7 +110,7 @@ export const apiClient = async <T>(
   }
 };
 
-// Helper Methods
+// ✅ Helper Methods
 export const get = <T>(endpoint: string, config?: RequestConfig) =>
   apiClient<T>(endpoint, { ...config, method: "GET" });
 
@@ -100,13 +131,12 @@ export const put = <T>(endpoint: string, body: any, config?: RequestConfig) =>
 export const del = <T>(endpoint: string, config?: RequestConfig) =>
   apiClient<T>(endpoint, { ...config, method: "DELETE" });
 
-
+// ✅ Auth Token Setter
 export const setAuthToken = (token: string) => {
   Cookies.set("auth_token", token, {
-    expires: 7,
+    expires: 7, // 7 din
     path: "/",
     sameSite: "Lax",
-    secure: false,
+    secure: process.env.NODE_ENV === "production", // only prod me secure
   });
 };
-
