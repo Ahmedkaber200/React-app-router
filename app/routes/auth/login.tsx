@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/form";
 import { post, setAuthToken } from "@/client/api-client";
 import { useMutation } from "@tanstack/react-query";
+import { supabase } from "@/client/supabase-client";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -41,8 +42,12 @@ export default function login() {
       password: "",
   },
   });
+  
   const { mutateAsync, isPending } = useMutation({
-    mutationFn: (e: z.infer<typeof formSchema>) => post("/login", e),
+    mutationFn: async (e: z.infer<typeof formSchema>) => {
+       const user = await supabase.auth.signUp({ email:e.email, password:e.password });
+       console.log(user);
+    },
     onSuccess: (data:any) => {
     console.log("Logins successful:", data);
         if(data){
@@ -56,6 +61,7 @@ export default function login() {
     },
   });
   function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values,'asdadasd')
     mutateAsync(values);
   }
 
@@ -97,7 +103,7 @@ export default function login() {
                   </FormItem>
                 )}
               />
-              <Button type="submit">Submit</Button>
+              <Button isLoading={isPending} type="submit">Submit</Button>
             </form>
           </Form>
         </CardContent>

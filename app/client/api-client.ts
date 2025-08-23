@@ -2,7 +2,8 @@ import Cookies from "js-cookie";
 import { toast } from "sonner";
 
 // const BASE_URL = "https://test-be-dashboard.forweb.tech/api";
-const BASE_URL = "http://localhost:8000/api";
+const BASE_URL = "http://192.168.1.41:8000/api";
+// const BASE_URL = "http://localhost:8000/api";
 
 interface ApiResponse<T> {
   data?: T;
