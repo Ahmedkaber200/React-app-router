@@ -14,6 +14,8 @@ export default [
       route("customers", "routes/portal/customer/index.tsx"),
       route("customers/create", "routes/portal/customer/create.tsx"),
       route("customers/:id", "routes/portal/customer/edit.tsx"),
+
+      route("products", "routes/portal/product/index.tsx"),
     ]
   ),
 ] satisfies RouteConfig;
