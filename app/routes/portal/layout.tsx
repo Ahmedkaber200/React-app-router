@@ -16,31 +16,31 @@ import type { Route } from "../+types/home";
 import { useAuthStore } from "@/store/auth";
 import { useEffect } from "react";
 
-export async function loader({ request }: Route.LoaderArgs) {
-  try {
-    const data = await get("/getprofile", {
-      req: request,
-    });
+// export async function loader({ request }: Route.LoaderArgs) {
+//   try {
+//     const data = await get("/getprofile", {
+//       req: request,
+//     });
 
-    if (!data) throw redirect("/auth/login");
+//     if (!data) throw redirect("/auth/login");
 
-    return data;
-  } catch {
-    throw redirect("/auth/login");
-  }
-}
+//     return data;
+//   } catch {
+//     throw redirect("/auth/login");
+//   }
+// }
 
-export default function AdminLayout({ loaderData }: Route.ComponentProps) {
-  const { setUser } = useAuthStore();
+export default function AdminLayout() {
+  // const { setUser } = useAuthStore();
 
   // jab loader data mile to zustand update
 
-  useEffect(() => {
-    if (loaderData) {
+  // useEffect(() => {
+  //   if (loaderData) {
      
-      setUser(loaderData);
-    }
-  }, [loaderData, setUser]);
+  //     setUser(loaderData);
+  //   }
+  // }, [loaderData, setUser]);
 
   return (
     <SidebarProvider>

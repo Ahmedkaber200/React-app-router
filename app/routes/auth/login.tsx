@@ -1,30 +1,18 @@
 import { z } from "zod";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { post, setAuthToken } from "@/client/api-client";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/client/supabase-client";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -40,29 +28,28 @@ export default function login() {
     defaultValues: {
       email: "",
       password: "",
-  },
+    },
   });
-  
+
   const { mutateAsync, isPending } = useMutation({
     mutationFn: async (e: z.infer<typeof formSchema>) => {
-       const user = await supabase.auth.signUp({ email:e.email, password:e.password });
-       console.log(user);
+      const { data, error } = await supabase.auth.signInWithPassword({ email: e.email, password: e.password });
+      if (error) throw error;
+      return data;
     },
-    onSuccess: (data:any) => {
-    console.log("Logins successful:", data);
-        if(data){
-          console.log("Login successful:", data);
-          setAuthToken(data.token);
-          navigate('/dashboard');
-        }
-        else{
-          console.log("Invalid credentials");
-        }
-    },
+
   });
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values,'asdadasd')
-    mutateAsync(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const data = await mutateAsync({
+        email: values.email.trim(),
+        password: values.password,
+      });
+      console.log("Login successful:", data);
+      navigate("/dashboard");
+    } catch (err: any) {
+      toast.error(err.message);
+    }
   }
 
   return (
@@ -70,9 +57,7 @@ export default function login() {
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>
-            Enter your email below to login to your account
-          </CardDescription>
+          <CardDescription>Enter your email below to login to your account</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -103,7 +88,9 @@ export default function login() {
                   </FormItem>
                 )}
               />
-              <Button isLoading={isPending} type="submit">Submit</Button>
+              <Button isLoading={isPending} type="submit">
+                Submit
+              </Button>
             </form>
           </Form>
         </CardContent>
