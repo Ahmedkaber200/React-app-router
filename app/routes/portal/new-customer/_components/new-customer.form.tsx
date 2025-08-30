@@ -84,33 +84,33 @@ export function CustomerForm({
     console.log("Form Values:", values); // 👈 log form values
     setIsButtonDisabled(true);
 
-    try {
-      if (mode === "create") {
-        const { error } = await supabase.from("customers").insert(values).single();
+    // try {
+    //   if (mode === "create") {
+    //     const { error } = await supabase.from("customers").insert(values).single();
 
-        if (error) throw error;
+    //     if (error) throw error;
 
-        console.log("✅ Customer created successfully in DB"); // 👈 success log
+    //     console.log("✅ Customer created successfully in DB"); // 👈 success log
 
-        toast.success("✅ Customer created successfully!");
-      } else if (mode === "edit" && initialData?.id) {
-        const { error } = await supabase
-          .from("customers")
-          .update(values)
-          .eq("id", initialData.id);
+    //     toast.success("✅ Customer created successfully!");
+    //   } else if (mode === "edit" && initialData?.id) {
+    //     const { error } = await supabase
+    //       .from("customers")
+    //       .update(values)
+    //       .eq("id", initialData.id);
 
-        if (error) throw error;
+    //     if (error) throw error;
 
-        toast.success("✏️ Customer updated successfully!");
-      }
+    //     toast.success("✏️ Customer updated successfully!");
+    //   }
 
-      form.reset();
-      navigate("/customers");
-    } catch (error: any) {
-      console.error("Supabase Error:", error.message);
-      toast.error(error.message || "Something went wrong!");
-      setIsButtonDisabled(false);
-    }
+    //   form.reset();
+    //   navigate("/customers");
+    // } catch (error: any) {
+    //   console.error("Supabase Error:", error.message);
+    //   toast.error(error.message || "Something went wrong!");
+    //   setIsButtonDisabled(false);
+    // }
   };
 
   return (
@@ -134,10 +134,6 @@ export function CustomerForm({
                     <Input
                       placeholder="Enter name"
                       {...field}
-                      onChange={(e) => {
-                        setNewTask((prev) => ({ ...prev, name: e.target.value }));
-                        field.onChange(e);
-                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -157,10 +153,7 @@ export function CustomerForm({
                       placeholder="Enter email"
                       type="email"
                       {...field}
-                      onChange={(e) => {
-                        setNewTask((prev) => ({ ...prev, email: e.target.value }));
-                        field.onChange(e);
-                      }}
+                     
                     />
                   </FormControl>
                   <FormMessage />
@@ -179,10 +172,6 @@ export function CustomerForm({
                     <Input
                       placeholder="Enter contact number"
                       {...field}
-                      onChange={(e) => {
-                        setNewTask((prev) => ({ ...prev, contact: e.target.value }));
-                        field.onChange(e);
-                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -201,10 +190,6 @@ export function CustomerForm({
                     <Input
                       placeholder="Enter address"
                       {...field}
-                      onChange={(e) => {
-                        setNewTask((prev) => ({ ...prev, address: e.target.value }));
-                        field.onChange(e);
-                      }}
                     />
                   </FormControl>
                   <FormMessage />
