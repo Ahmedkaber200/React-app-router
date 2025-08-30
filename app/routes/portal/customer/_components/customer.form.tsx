@@ -12,15 +12,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { put, get } from "@/client/api-client";
+
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useNavigate } from "react-router";
-import { supabase } from "@/client/supabase-client";
+import { useNavigate  } from "react-router";
+import { post } from "@/client/supabase-client";
+
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name is required" }),
   email: z.string().email({ message: "Invalid email address" }),
-  contact: z.string().min(10, { message: "Contact must be at least 10 digits" }),
+  contact: z
+    .string()
+    .min(10, { message: "Contact must be at least 10 digits" }),
   address: z.string().min(5, { message: "Address is required" }),
 });
 
@@ -35,27 +41,15 @@ type CustomerFormProps = {
   };
 };
 
-type Tasks = {
-  name: string;
-  email: string;
-  contact: string;
-  address: string;
-};
-
 export function CustomerForm({
   mode = "create",
   initialData,
 }: CustomerFormProps) {
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-  const [newTask, setNewTask] = useState<Tasks>({
-    name: "",
-    email: "",
-    contact: "",
-    address: "",
-  });
 
   const navigate = useNavigate();
 
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -66,7 +60,7 @@ export function CustomerForm({
     },
   });
 
-  // 🟢 Set form values when editing
+  // Set form values when in edit mode
   useEffect(() => {
     if (mode === "edit" && initialData) {
       form.reset({
@@ -75,43 +69,43 @@ export function CustomerForm({
         contact: initialData.contact,
         address: initialData.address,
       });
-      setNewTask(initialData); // Local state update
     }
   }, [mode, initialData, form]);
 
-  // 🟢 Supabase submit handler
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log("Form Values:", values); // 👈 log form values
-    setIsButtonDisabled(true);
+  const { mutate, isPending } = useMutation({
+    mutationFn: (data: z.infer<typeof formSchema>) =>
+      mode === "create"
+        ? post("customers", data)
+        : put(`/customers/${initialData?.id}`, data),
+    onSuccess: (response: any) => {
+      const successMessage =
+        mode === "create"
+          ? response?.message || "Customer created successfully!"
+          : response?.message || "Customer updated successfully!";
 
-    try {
-      if (mode === "create") {
-        const { error } = await supabase.from("customers").insert(values).single();
-
-        if (error) throw error;
-
-        console.log("✅ Customer created successfully in DB"); // 👈 success log
-
-        toast.success("✅ Customer created successfully!");
-      } else if (mode === "edit" && initialData?.id) {
-        const { error } = await supabase
-          .from("customers")
-          .update(values)
-          .eq("id", initialData.id);
-
-        if (error) throw error;
-
-        toast.success("✏️ Customer updated successfully!");
-      }
+      toast.success(successMessage, {
+        duration: 7000, // 🕒 7 seconds
+      });
 
       form.reset();
-      navigate("/customers");
-    } catch (error: any) {
-      console.error("Supabase Error:", error.message);
-      toast.error(error.message || "Something went wrong!");
-      setIsButtonDisabled(false);
-    }
+    },
+  });
+
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    setIsButtonDisabled(true);
+
+    mutate(values, {
+      onSuccess: () => {
+         navigate("/customers");
+      },
+      onError: (error) => {
+        console.error(`Failed to ${mode} customer:`, error);
+        setIsButtonDisabled(false);
+      },
+    });
   };
+
+
 
   return (
     <Card className="w-full">
@@ -123,7 +117,6 @@ export function CustomerForm({
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* 🟢 Name */}
             <FormField
               control={form.control}
               name="name"
@@ -131,21 +124,13 @@ export function CustomerForm({
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Enter name"
-                      {...field}
-                      onChange={(e) => {
-                        setNewTask((prev) => ({ ...prev, name: e.target.value }));
-                        field.onChange(e);
-                      }}
-                    />
+                    <Input placeholder="Enter name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* 🟢 Email */}
             <FormField
               control={form.control}
               name="email"
@@ -155,12 +140,9 @@ export function CustomerForm({
                   <FormControl>
                     <Input
                       placeholder="Enter email"
-                      type="email"
                       {...field}
-                      onChange={(e) => {
-                        setNewTask((prev) => ({ ...prev, email: e.target.value }));
-                        field.onChange(e);
-                      }}
+                      type="email"
+                      // disabled={mode === "edit"} // Disable email in edit mode
                     />
                   </FormControl>
                   <FormMessage />
@@ -168,7 +150,6 @@ export function CustomerForm({
               )}
             />
 
-            {/* 🟢 Contact */}
             <FormField
               control={form.control}
               name="contact"
@@ -176,21 +157,13 @@ export function CustomerForm({
                 <FormItem>
                   <FormLabel>Contact</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Enter contact number"
-                      {...field}
-                      onChange={(e) => {
-                        setNewTask((prev) => ({ ...prev, contact: e.target.value }));
-                        field.onChange(e);
-                      }}
-                    />
+                    <Input placeholder="Enter contact number" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* 🟢 Address */}
             <FormField
               control={form.control}
               name="address"
@@ -198,14 +171,7 @@ export function CustomerForm({
                 <FormItem>
                   <FormLabel>Address</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Enter address"
-                      {...field}
-                      onChange={(e) => {
-                        setNewTask((prev) => ({ ...prev, address: e.target.value }));
-                        field.onChange(e);
-                      }}
-                    />
+                    <Input placeholder="Enter address" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -216,16 +182,16 @@ export function CustomerForm({
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isButtonDisabled}
+                disabled={isPending || isButtonDisabled}
               >
-                {isButtonDisabled ? "Submitting..." : "Submit"}
+                {isPending || isButtonDisabled ? "Submitting..." : "Submit"}
               </Button>
 
               <Button
                 type="button"
                 variant="outline"
                 className="w-full"
-                onClick={() => navigate("/customers")}
+                onClick={() =>navigate("/customers")}
               >
                 Cancel
               </Button>

@@ -17,7 +17,6 @@ export default [
 
       route("products", "routes/portal/product/index.tsx"),
 
-      route("new-customer", "routes/portal/new-customer/create.tsx"),
     ]
   ),
 ] satisfies RouteConfig;
