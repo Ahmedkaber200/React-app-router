@@ -46,7 +46,7 @@ export default function login() {
         password: values.password,
       });
       console.log("Login successful:", data);
-      navigate("/dashboard");
+      // navigate("/dashboard");
     } catch (err: any) {
       toast.error(err.message);
     }

@@ -13,12 +13,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { put, get } from "@/client/api-client";
+// import { put, get } from "@/client/api-client";
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useNavigate  } from "react-router";
-import { post } from "@/client/supabase-client";
+import { post, put } from "@/client/supabase-client";
+import { id } from "zod/v4/locales";
 
 
 const formSchema = z.object({
@@ -76,7 +77,7 @@ export function CustomerForm({
     mutationFn: (data: z.infer<typeof formSchema>) =>
       mode === "create"
         ? post("customers", data)
-        : put(`/customers/${initialData?.id}`, data),
+        : put(`customers`, initialData?.id, data),
     onSuccess: (response: any) => {
       const successMessage =
         mode === "create"
@@ -104,8 +105,6 @@ export function CustomerForm({
       },
     });
   };
-
-
 
   return (
     <Card className="w-full">
@@ -183,8 +182,10 @@ export function CustomerForm({
                 type="submit"
                 className="w-full"
                 disabled={isPending || isButtonDisabled}
+                   onClick={() =>navigate("/customers")}
               >
                 {isPending || isButtonDisabled ? "Submitting..." : "Submit"}
+             
               </Button>
 
               <Button

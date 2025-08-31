@@ -134,10 +134,7 @@ export const del = <T>(endpoint: string, config?: RequestConfig) =>
 
 // ✅ Auth Token Setter
 export const setAuthToken = (token: string) => {
-  Cookies.set("auth_token", token, {
-    expires: 7, // 7 din
-    path: "/",
-    sameSite: "Lax",
-    secure: process.env.NODE_ENV === "production", // only prod me secure
-  });
+  Cookies.set("auth_token", token,
+    
+  );
 };

@@ -1,7 +1,8 @@
 import React from "react";
 import { CustomerForm } from "./_components/customer.form";
 import type { Route } from "./+types";
-import { get } from "@/client/api-client";
+import { del, get, supabase } from "@/client/supabase-client";
+// import { get } from "@/client/api-client";
 
 // -------------------------------
 // Type for Customer (adjust according to your API)
@@ -9,16 +10,45 @@ type Customer = {
   id: string;
   name: string;
   email: string;
+  contact: string;
+  address: string;
   // add other fields...
-};
+};  
 
 // -------------------------------
 // Loader (SSR fetching)
 export async function loader({ params }: Route.LoaderArgs) {
   const id = (params as any).id as string; // ✅ safer than (params as any)
-  const data: Customer | null = await get(`/customers/${id}`);
-  return { data };
+  // ✅ supabase-client سے GET call
+  const data = await get(`customers`,id);
+
+  // اگر array آ رہا ہے تو ایک object نکال لیں
+  return { data: data || null };
+
 }
+
+
+  // const data = await get("customers" + `?id=eq.${id}`);
+  // return { data };
+
+
+// Loader (SSR fetching)
+// export async function loader({ params }: Route.LoaderArgs) {
+//   const id = (params as any).id as string;
+
+//   const { data, error } = await supabase
+//     .from("customers")
+//     .select("*")
+//     .eq("id", id)
+//     .single();
+
+//   if (error) {
+//     console.error(error.message);
+//     return { data: null };
+//   }
+
+//   return { data };
+// }
 
 // -------------------------------
 // Page Component
