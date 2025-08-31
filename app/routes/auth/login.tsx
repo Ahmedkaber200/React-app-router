@@ -11,8 +11,9 @@ import { useNavigate } from "react-router";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { post, setAuthToken } from "@/client/api-client";
 import { useMutation } from "@tanstack/react-query";
-import { supabase } from "@/client/supabase-client";
+import { setToken, supabase } from "@/client/supabase-client";
 import { toast } from "sonner";
+import { useAuthStore } from "@/store/auth";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -22,7 +23,8 @@ const formSchema = z.object({
 });
 
 export default function login() {
-  const navigate = useNavigate();
+  const {setUser} = useAuthStore();
+  let navigate = useNavigate();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -37,7 +39,6 @@ export default function login() {
       if (error) throw error;
       return data;
     },
-
   });
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -45,10 +46,9 @@ export default function login() {
         email: values.email.trim(),
         password: values.password,
       });
-      console.log("Login successful:", data);
-      // navigate("/dashboard");
+      navigate("/dashboard");
     } catch (err: any) {
-      toast.error(err.message);
+    toast.error(err.message);
     }
   }
 

@@ -134,7 +134,6 @@ export const del = <T>(endpoint: string, config?: RequestConfig) =>
 
 // ✅ Auth Token Setter
 export const setAuthToken = (token: string) => {
-  Cookies.set("auth_token", token,
-    
+    Cookies.set("auth_token", token,
   );
 };

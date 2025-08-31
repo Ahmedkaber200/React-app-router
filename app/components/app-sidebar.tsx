@@ -19,8 +19,9 @@ import {
   SidebarRail,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { NavLink  } from "react-router";
+import { NavLink, useNavigate  } from "react-router";
 import { useAuthStore } from "@/store/auth";
+import { supabase } from "@/client/supabase-client";
 // import { InitializeStore, storeRef } from "@/app/hooks/usestore";
 
 // Sample data
@@ -57,7 +58,8 @@ const data: MenuItem[] = [
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 //   const router = useRouter();
-const {user , logout} = useAuthStore()
+const {user} = useAuthStore()
+const navigate = useNavigate()
 
 //   const handleLogout = () => {
 //     console.log("Logging out...");
@@ -70,7 +72,7 @@ const {user , logout} = useAuthStore()
       {/* <InitializeStore ref={storeRef} /> */}
       <Sidebar {...props}>
         <SidebarHeader>
-          <h1>{user?.name}</h1>
+          <h1>{user?.email}</h1>
         </SidebarHeader>
 
         <SidebarContent className="gap-0">
@@ -127,7 +129,11 @@ const {user , logout} = useAuthStore()
               <SidebarMenuItem className="w-full">
                 <SidebarMenuButton
                   className="w-full text-left"
-                  onClick={logout}
+                  onClick={async ()=>{
+                    const {error} = await supabase.auth.signOut();
+                    if(error) return;
+                    navigate('/auth/login')
+                  }}
                 >
                   Sign Out
                 </SidebarMenuButton>

@@ -8,6 +8,7 @@
 // export {supabase}
 
 import { createClient } from "@supabase/supabase-js";
+import Cookies from "js-cookie";
 import { toast } from "sonner";
 
 export const supabase = createClient(
@@ -70,6 +71,11 @@ export const put = async (table: string, id: any, body:any) => {
 
   return data;
 };
+
+export const setToken = (key: string, token: string) => {
+  Cookies.set(key, token);
+};
+
 
 // const supabaseUrl = 'https://isnepiiacxdhypehsxww.supabase.co'
 // const supabaseKey = process.env.SUPABASE_KEY
