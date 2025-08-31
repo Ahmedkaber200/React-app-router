@@ -6,42 +6,53 @@ type Route = {
 };
 
 import { Separator } from "@/components/ui/separator";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { Outlet, redirect } from "react-router";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Navigate, Outlet, redirect } from "react-router";
 import type { Route } from "../+types/home";
 import { useAuthStore } from "@/store/auth";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/client/supabase-client";
+import type { Session } from "@supabase/supabase-js";
+import Loading from "@/components/loding";
+import { toast } from "sonner";
+// import { supabase } from "@/client/supabase-client";
 
-// export async function loader({ request }: Route.LoaderArgs) {
+// export async function loader() {
 //   try {
-//     const data = await get("/getprofile", {
-//       req: request,
-//     });
-
-//     if (!data) throw redirect("/auth/login");
-
-//     return data;
+//     const { data  } = await supabase.auth.getSession();
+//     console.log(data);
+//     if (!data.session) throw redirect("/auth/login");
+//     return data.session;
 //   } catch {
 //     throw redirect("/auth/login");
 //   }
 // }
 
 export default function AdminLayout() {
-  // const { setUser } = useAuthStore();
+  const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState<Session | null>(null);
 
-  // jab loader data mile to zustand update
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data, error }) => {
+      console.log(error);
+      if (error) {
+        toast.error(error.message);
+      }
+      setSession(data.session);
+      setLoading(false);
+    });
 
-  // useEffect(() => {
-  //   if (loaderData) {
-     
-  //     setUser(loaderData);
-  //   }
-  // }, [loaderData, setUser]);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
 
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (loading) return <Loading />;
+  if (!session) return <Navigate to="/auth/login" />;
   return (
     <SidebarProvider>
       <AppSidebar />

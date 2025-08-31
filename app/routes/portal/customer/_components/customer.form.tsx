@@ -1,14 +1,7 @@
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,17 +10,14 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useNavigate  } from "react-router";
+import { useNavigate } from "react-router";
 import { post, put } from "@/client/supabase-client";
 import { id } from "zod/v4/locales";
-
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name is required" }),
   email: z.string().email({ message: "Invalid email address" }),
-  contact: z
-    .string()
-    .min(10, { message: "Contact must be at least 10 digits" }),
+  contact: z.string().min(10, { message: "Contact must be at least 10 digits" }),
   address: z.string().min(5, { message: "Address is required" }),
 });
 
@@ -42,15 +32,11 @@ type CustomerFormProps = {
   };
 };
 
-export function CustomerForm({
-  mode = "create",
-  initialData,
-}: CustomerFormProps) {
+export function CustomerForm({ mode = "create", initialData }: CustomerFormProps) {
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
   const navigate = useNavigate();
 
-  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -74,15 +60,9 @@ export function CustomerForm({
   }, [mode, initialData, form]);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: z.infer<typeof formSchema>) =>
-      mode === "create"
-        ? post("customers", data)
-        : put(`customers`, initialData?.id, data),
+    mutationFn: (data: z.infer<typeof formSchema>) => (mode === "create" ? post("customers", data) : put(`customers`, initialData?.id, data)),
     onSuccess: (response: any) => {
-      const successMessage =
-        mode === "create"
-          ? response?.message || "Customer created successfully!"
-          : response?.message || "Customer updated successfully!";
+      const successMessage = mode === "create" ? response?.message || "Customer created successfully!" : response?.message || "Customer updated successfully!";
 
       toast.success(successMessage, {
         duration: 7000, // 🕒 7 seconds
@@ -97,7 +77,7 @@ export function CustomerForm({
 
     mutate(values, {
       onSuccess: () => {
-         navigate("/customers");
+        navigate("/customers");
       },
       onError: (error) => {
         console.error(`Failed to ${mode} customer:`, error);
@@ -109,9 +89,7 @@ export function CustomerForm({
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>
-          {mode === "create" ? "Add Customer" : "Edit Customer"}
-        </CardTitle>
+        <CardTitle>{mode === "create" ? "Add Customer" : "Edit Customer"}</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -138,6 +116,7 @@ export function CustomerForm({
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
+                      readOnly={mode == "edit"}
                       placeholder="Enter email"
                       {...field}
                       type="email"
@@ -178,22 +157,11 @@ export function CustomerForm({
             />
 
             <div className="flex gap-4">
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isPending || isButtonDisabled}
-                   onClick={() =>navigate("/customers")}
-              >
+              <Button type="submit" className="w-full" disabled={isPending || isButtonDisabled} onClick={() => navigate("/customers")}>
                 {isPending || isButtonDisabled ? "Submitting..." : "Submit"}
-             
               </Button>
 
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() =>navigate("/customers")}
-              >
+              <Button type="button" variant="outline" className="w-full" onClick={() => navigate("/customers")}>
                 Cancel
               </Button>
             </div>

@@ -7,13 +7,19 @@
 
 // export {supabase}
 
-import { createClient } from "@supabase/supabase-js";
 import Cookies from "js-cookie";
+import { createClient } from "@supabase/supabase-js";
 import { toast } from "sonner";
 
 export const supabase = createClient(
   "https://isnepiiacxdhypehsxww.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzbmVwaWlhY3hkaHlwZWhzeHd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxOTMzNDksImV4cCI6MjA3MTc2OTM0OX0.n1UxNDHlLZ-aCjQDkWlu7BNvvPRPfmxGPJ9vube0blI"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzbmVwaWlhY3hkaHlwZWhzeHd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxOTMzNDksImV4cCI6MjA3MTc2OTM0OX0.n1UxNDHlLZ-aCjQDkWlu7BNvvPRPfmxGPJ9vube0blI",
+  
+  {
+    auth:{
+      autoRefreshToken:true,
+    }
+  }
 );
 
 export const get = async (table: string, id?: string | number) => {

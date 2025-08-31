@@ -2,6 +2,8 @@ import React from "react";
 import { CustomerForm } from "./_components/customer.form";
 import type { Route } from "./+types";
 import { del, get, supabase } from "@/client/supabase-client";
+import { useQuery } from "@tanstack/react-query";
+import Loading from "@/components/loding";
 // import { get } from "@/client/api-client";
 
 // -------------------------------
@@ -13,53 +15,27 @@ type Customer = {
   contact: string;
   address: string;
   // add other fields...
-};  
+};
 
 // -------------------------------
 // Loader (SSR fetching)
 export async function loader({ params }: Route.LoaderArgs) {
-  const id = (params as any).id as string; // ✅ safer than (params as any)
-  // ✅ supabase-client سے GET call
-  const data = await get(`customers`,id);
-
-  // اگر array آ رہا ہے تو ایک object نکال لیں
-  return { data: data || null };
-
+  const id = (params as any).id as string;
+  return { id };
 }
-
-
-  // const data = await get("customers" + `?id=eq.${id}`);
-  // return { data };
-
-
-// Loader (SSR fetching)
-// export async function loader({ params }: Route.LoaderArgs) {
-//   const id = (params as any).id as string;
-
-//   const { data, error } = await supabase
-//     .from("customers")
-//     .select("*")
-//     .eq("id", id)
-//     .single();
-
-//   if (error) {
-//     console.error(error.message);
-//     return { data: null };
-//   }
-
-//   return { data };
-// }
 
 // -------------------------------
 // Page Component
 const Page = ({ loaderData }: Route.ComponentProps) => {
-  if (!(loaderData as any)?.data) {
-    return (
-      <div className="text-red-500">Customer not found or failed to load.</div>
-    );
+  if (!(loaderData as any)?.id) {
+    return <div className="text-red-500">Customer not found or failed to load.</div>;
   }
+  const { data, isPending } = useQuery({
+    queryKey: ["customers"],
+    queryFn: () => get("customers", (loaderData as any)?.id),
+  });
 
-  return <CustomerForm initialData={(loaderData as any).data} mode="edit" />;
+  return isPending ? <Loading /> : <CustomerForm initialData={data} mode="edit" />;
 };
 
 export default Page;
