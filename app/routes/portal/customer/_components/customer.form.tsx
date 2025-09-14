@@ -157,7 +157,11 @@ export function CustomerForm({ mode = "create", initialData }: CustomerFormProps
             />
 
             <div className="flex gap-4">
-              <Button type="submit" className="w-full" disabled={isPending || isButtonDisabled} onClick={() => navigate("/customers")}>
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={isPending || isButtonDisabled}
+              >
                 {isPending || isButtonDisabled ? "Submitting..." : "Submit"}
               </Button>
 

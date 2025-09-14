@@ -1,6 +1,6 @@
 import React from "react";
 import type { Route } from "./+types/index";
-import { get, del } from "@/client/api-client";
+// import { get, del } from "@/client/api-client";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Link } from "react-router";
@@ -9,6 +9,7 @@ import { EditIcon, Trash2 } from "lucide-react";
 import { ConfirmationModal } from "@/components/confirm-modal";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { del, get, supabase } from "@/client/supabase-client";
 
 const Product = ({ loaderData }: Route.ComponentProps) => {
   const [open, setOpen] = React.useState(false);
@@ -21,11 +22,11 @@ const Product = ({ loaderData }: Route.ComponentProps) => {
     queryFn: () => get(`/products`),
   });
 
-  // Delete Product
   const { mutate: deleteProduct, isPending } = useMutation({
     mutationFn: async (id: number) => {
-      const res = await del(`/products/${id}`);
-      return res;
+      // del(`customers`, id);
+      const res = await supabase.from("products").delete().eq("id", id).select();
+      console.log(res)
     },
     onSuccess: () => {
       toast.success("Product deleted successfully!");
@@ -34,7 +35,7 @@ const Product = ({ loaderData }: Route.ComponentProps) => {
       setSelectedId(null);
     },
     onError: () => {
-      toast.error("Failed to delete product.");
+      toast.error("Failed to delete customer.");
     },
   });
 

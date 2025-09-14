@@ -1,29 +1,21 @@
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMutation } from "@tanstack/react-query";
-import { post, put } from "@/client/api-client";
-
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
+import { post, put } from "@/client/supabase-client";
 
 // ✅ Product form schema
 const formSchema = z.object({
-  name: z.string().min(2, { message: "Name is required" }),
+  name: z.string().min(2, { message: "Product name is required" }),
   description: z.string().min(5, { message: "Description is required" }),
-  price: z.string().min(1, { message: "Price is required" }),
+  price: z.string().regex(/^\d+(\.\d{1,2})?$/, { message: "Enter valid price" }),
 });
 
 type ProductFormProps = {
@@ -36,12 +28,8 @@ type ProductFormProps = {
   };
 };
 
-export function ProductForm({
-  mode = "create",
-  initialData,
-}: ProductFormProps) {
+export function ProductForm({ mode = "create", initialData }: ProductFormProps) {
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-
   const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -53,7 +41,7 @@ export function ProductForm({
     },
   });
 
-  // Set form values when in edit mode
+  // ✅ Edit mode values set
   useEffect(() => {
     if (mode === "edit" && initialData) {
       form.reset({
@@ -66,19 +54,14 @@ export function ProductForm({
 
   const { mutate, isPending } = useMutation({
     mutationFn: (data: z.infer<typeof formSchema>) =>
-      mode === "create"
-        ? post("/products", data)
-        : put(`/products/${initialData?.id}`, data),
+      mode === "create" ? post("products", data) : put("products", initialData?.id, data),
     onSuccess: (response: any) => {
       const successMessage =
         mode === "create"
           ? response?.message || "Product created successfully!"
           : response?.message || "Product updated successfully!";
 
-      toast.success(successMessage, {
-        duration: 7000,
-      });
-
+      toast.success(successMessage, { duration: 7000 });
       form.reset();
     },
   });
@@ -100,20 +83,18 @@ export function ProductForm({
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>
-          {mode === "create" ? "Add Product" : "Edit Product"}
-        </CardTitle>
+        <CardTitle>{mode === "create" ? "Add Product" : "Edit Product"}</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Name */}
+            {/* Product Name */}
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>Product Name</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter product name" {...field} />
                   </FormControl>
@@ -145,14 +126,13 @@ export function ProductForm({
                 <FormItem>
                   <FormLabel>Price</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter product price" {...field} />
+                    <Input placeholder="Enter price" type="number" step="0.01" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Buttons */}
             <div className="flex gap-4">
               <Button
                 type="submit"

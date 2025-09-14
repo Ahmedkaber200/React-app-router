@@ -1,7 +1,6 @@
-// "use client";
 import { CustomerForm } from './_components/customer.form'
 
-const page = () => {
+const CustomerPage = () => {
   return (
     <div className="grid grid-cols-1 gap-8">
         <CustomerForm />
@@ -9,4 +8,4 @@ const page = () => {
   ) 
 } 
 
-export default page
+export default CustomerPage

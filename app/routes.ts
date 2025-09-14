@@ -10,6 +10,13 @@ export default [
     route("customers/:id", "routes/portal/customer/edit.tsx"),
 
     route("products", "routes/portal/product/index.tsx"),
+    route("products/create", "routes/portal/product/create.tsx"),
+    route("products/:id", "routes/portal/product/edit.tsx"),
+
+    // route("invoices", "routes/portal/invoice/index.tsx"),
+    route("invoices/:id", "routes/portal/invoice/edit.tsx"),
+    // route("invoices/create", "routes/portal/invoice/create.tsx"),
+    
   ]),
   route("*", "routes/not-found.tsx"),
 ] satisfies RouteConfig;

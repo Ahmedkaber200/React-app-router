@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import type { Route } from "./+types/index";
-import { post } from "@/client/api-client";
 import {
   Table,
   TableBody,
@@ -25,17 +24,22 @@ import { del, get, supabase } from "@/client/supabase-client";
 //   return data || [];
 // }
 
+// Fetching Customers
 const customer = ({ loaderData }: Route.ComponentProps) => {
   const revalidator = useRevalidator();
   const [open, setOpen] = React.useState(false);
   const [selectedId, setSelectedId] = React.useState<number | null>(null);
   const queryClient = useQueryClient();
+
+  // Fetching Customers
   const { data = [], isLoading } = useQuery<any>({
     queryKey: ["customer"],
     queryFn: () => {
       return get("customers");
     },
   });
+  
+  // delete customers
   const { mutate: deleteCustomer, isPending } = useMutation({
     mutationFn: async (id: number) => {
       // del(`customers`, id);
