@@ -13,8 +13,8 @@ export default [
     route("products/create", "routes/portal/product/create.tsx"),
     route("products/:id", "routes/portal/product/edit.tsx"),
 
-    // route("invoices", "routes/portal/invoice/index.tsx"),
-    route("invoices/:id", "routes/portal/invoice/edit.tsx"),
+    route("invoices", "routes/portal/invoices/index.tsx"),
+    // route("invoices/:id", "routes/portal/invoice/edit.tsx"),
     // route("invoices/create", "routes/portal/invoice/create.tsx"),
     
   ]),

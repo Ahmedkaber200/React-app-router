@@ -48,32 +48,32 @@ interface Invoice {
 // Fetch Invoices
 // --------------------
 
-async function fetchInvoices(): Promise<Invoice[]> {
-  const { data, error } = await supabase
-    .from("invoices")
-    .select(`
-      id,
-      customer_id,
-      total_amount,
-      status,
-      date,
-      products ( id, name, price ),
-      customer:customers ( name )
-    `);
+// async function fetchInvoices(): Promise<Invoice[]> {
+//   const { data, error } = await supabase
+//     .from("invoices")
+//     .select(`
+//       id,
+//       customer_id,
+//       total_amount,
+//       status,
+//       date,
+//       products ( id, name, price ),
+//       customer:customers ( name )
+//     `);
 
-  if (error) {
-    console.error("Supabase fetch error:", error);
-    throw new Error(error.message);
-  }
+//   if (error) {
+//     console.error("Supabase fetch error:", error);
+//     throw new Error(error.message);
+//   }
 
-  // 🔥 Fix: customer array → single object
-  const formatted = (data ?? []).map((invoice: any) => ({
-    ...invoice,
-    customer: invoice.customer?.[0] ?? null, // take first element
-  }));
+//   // 🔥 Fix: customer array → single object
+//   const formatted = (data ?? []).map((invoice: any) => ({
+//     ...invoice,
+//     customer: invoice.customer?.[0] ?? null, // take first element
+//   }));
 
-  return formatted as Invoice[];
-}
+//   return formatted as Invoice[];
+// }
 
 // async function fetchInvoices(): Promise<Invoice[]> {
 //   const { data, error } = await supabase
@@ -130,6 +130,7 @@ function useDeleteInvoice() {
 // ----------------------
 export function InvoiceTable({ data }: { data: Invoice[] }) {
 //   const router = useRouter();
+
   const [openRows, setOpenRows] = useState<number[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -145,7 +146,7 @@ export function InvoiceTable({ data }: { data: Invoice[] }) {
 
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-  const paginatedData = filteredData.slice(startIndex, endIndex);
+  const paginatedData = data;
 
   const { mutate: deleteInvoice, isPending } = useDeleteInvoice();
 
@@ -224,7 +225,7 @@ export function InvoiceTable({ data }: { data: Invoice[] }) {
                   <TableCell>{item.status}</TableCell>
                   <TableCell>{item.date}</TableCell>
                   <TableCell>
-                    {item.products.length}
+                    {/* {item.products.length} */}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -268,7 +269,7 @@ export function InvoiceTable({ data }: { data: Invoice[] }) {
                     <TableCell colSpan={6}>
                       <div className="p-4 space-y-2 bg-gray-50 dark:bg-gray-900">
                         <h4 className="font-semibold mb-2">Products</h4>
-                        {item.products.map((product) => (
+                        {/* {item.products.map((product) => (
                           <div
                             key={product.id}
                             className="border p-2 rounded bg-white dark:bg-gray-800"
@@ -283,7 +284,7 @@ export function InvoiceTable({ data }: { data: Invoice[] }) {
                               <strong>Price:</strong> ${product.price}
                             </p>
                           </div>
-                        ))}
+                        ))} */}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -349,9 +350,8 @@ export function InvoiceTable({ data }: { data: Invoice[] }) {
 export default function InvoicesPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["invoices"],
-    queryFn: fetchInvoices,
+    queryFn: ()=> get('invoices'),
   });
-
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Failed to load invoices</p>;
 
